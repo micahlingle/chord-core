@@ -1,3 +1,12 @@
+# Local build files
+/build
+
+# Local audio files for development/testing
+/datasets
+
+# Mac-specific
+*.DS_Store
+
 # Prerequisites
 *.d
 
