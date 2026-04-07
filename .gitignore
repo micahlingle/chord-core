@@ -1,6 +1,7 @@
 # Local build files
 /build
 /build-coverage
+/build-*
 
 # Local audio files for development/testing
 /datasets
