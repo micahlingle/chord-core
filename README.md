@@ -41,6 +41,26 @@ cmake --build build
 
 ## Test
 
+The standard test workflow includes line and branch coverage:
+
+```bash
+cmake --fresh -S . -B build-coverage \
+  -DCHORD_CORE_BUILD_TESTS=ON \
+  -DCHORD_CORE_ENABLE_COVERAGE=ON \
+  -DCMAKE_BUILD_TYPE=Debug
+
+cmake --build build-coverage --target coverage
+```
+
+This runs the unit tests, prints a coverage summary, and writes an HTML report to `build-coverage/coverage.html`.
+
+Optional dependency:
+
+- macOS (Homebrew): `brew install gcovr`
+- Ubuntu/Debian: `sudo apt-get install gcovr`
+
+For a faster test-only build without coverage:
+
 ```bash
 cmake -S . -B build -DCHORD_CORE_BUILD_TESTS=ON
 cmake --build build
@@ -49,44 +69,11 @@ ctest --test-dir build --output-on-failure
 
 ## Coverage
 
-Line and branch coverage can be quantified with compiler coverage instrumentation plus `gcovr`.
-Coverage must be generated from the `build-coverage` tree, not the regular `build` tree.
-
-Optional dependency:
-
-- macOS (Homebrew): `brew install gcovr`
-- Ubuntu/Debian: `sudo apt-get install gcovr`
-
-If you are using AppleClang on macOS, pass `--gcov-executable 'xcrun llvm-cov gcov'` so `gcovr` can find Apple's LLVM coverage tool and read Clang's coverage data correctly.
+The `coverage` target wraps the full coverage flow in one command after configuration:
 
 ```bash
-cmake --fresh -S . -B build-coverage \
-  -DCHORD_CORE_BUILD_TESTS=ON \
-  -DCHORD_CORE_ENABLE_COVERAGE=ON \
-  -DCMAKE_BUILD_TYPE=Debug
-
-cmake --build build-coverage
-ctest --test-dir build-coverage --output-on-failure
-
-gcovr --root . \
-  --object-directory build-coverage \
-  --filter 'src/.*' \
-  --filter 'include/.*' \
-  --exclude 'tests/.*' \
-  --txt-metric branch \
-  --gcov-executable 'xcrun llvm-cov gcov' \
-  --print-summary
+cmake --build build-coverage --target coverage
 ```
 
-For an HTML report:
-
-```bash
-gcovr --root . \
-  --object-directory build-coverage \
-  --filter 'src/.*' \
-  --filter 'include/.*' \
-  --exclude 'tests/.*' \
-  --txt-metric branch \
-  --gcov-executable 'xcrun llvm-cov gcov' \
-  --html-details build-coverage/coverage.html
-```
+Coverage must be generated from a build tree configured with `-DCHORD_CORE_ENABLE_COVERAGE=ON`.
+On macOS/AppleClang, CMake configures `gcovr` to use `xcrun llvm-cov gcov` automatically.

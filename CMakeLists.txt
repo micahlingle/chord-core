@@ -8,6 +8,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(CHORD_CORE_BUILD_TESTS "Build unit tests" ON)
 option(CHORD_CORE_ENABLE_COVERAGE "Build with line and branch coverage instrumentation" OFF)
+set(CHORD_CORE_GCOVR_EXECUTABLE "gcovr" CACHE STRING "gcovr executable used by the coverage target")
+set(CHORD_CORE_GCOV_EXECUTABLE "gcov" CACHE STRING "gcov-compatible executable used by gcovr")
+
+if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+    set(CHORD_CORE_GCOV_EXECUTABLE "xcrun llvm-cov gcov" CACHE STRING "gcov-compatible executable used by gcovr" FORCE)
+endif()
 
 function(chord_core_enable_coverage target_name)
     if(CHORD_CORE_ENABLE_COVERAGE)
@@ -111,5 +117,25 @@ if(CHORD_CORE_BUILD_TESTS)
 
         include(GoogleTest)
         gtest_discover_tests(chord_core_tests)
+
+        if(CHORD_CORE_ENABLE_COVERAGE)
+            add_custom_target(coverage
+                COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
+                COMMAND ${CHORD_CORE_GCOVR_EXECUTABLE}
+                    --root ${CMAKE_SOURCE_DIR}
+                    --object-directory ${CMAKE_BINARY_DIR}
+                    --filter "src/.*"
+                    --filter "include/.*"
+                    --exclude "tests/.*"
+                    --txt-metric branch
+                    --gcov-executable "${CHORD_CORE_GCOV_EXECUTABLE}"
+                    --print-summary
+                    --html-details ${CMAKE_BINARY_DIR}/coverage.html
+                DEPENDS chord_core_tests
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                COMMENT "Running unit tests and generating line/branch coverage"
+                VERBATIM
+            )
+        endif()
     endif()
 endif()
