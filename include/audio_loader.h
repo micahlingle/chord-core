@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -10,6 +11,10 @@ struct AudioFileData {
     int sampleRate = 0;
     int channelCount = 0;
 };
+
+std::vector<float> downMixInterleavedToMono(const float* interleavedSamples,
+                                           std::size_t frameCount,
+                                           int channelCount);
 
 class AudioLoader {
 public:

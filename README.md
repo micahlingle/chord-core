@@ -38,3 +38,55 @@ cmake --build build
 ```bash
 ./build/chord_core_demo /path/to/file.wav
 ```
+
+## Test
+
+```bash
+cmake -S . -B build -DCHORD_CORE_BUILD_TESTS=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+## Coverage
+
+Line and branch coverage can be quantified with compiler coverage instrumentation plus `gcovr`.
+Coverage must be generated from the `build-coverage` tree, not the regular `build` tree.
+
+Optional dependency:
+
+- macOS (Homebrew): `brew install gcovr`
+- Ubuntu/Debian: `sudo apt-get install gcovr`
+
+If you are using AppleClang on macOS, pass `--gcov-executable 'xcrun llvm-cov gcov'` so `gcovr` can find Apple's LLVM coverage tool and read Clang's coverage data correctly.
+
+```bash
+cmake --fresh -S . -B build-coverage \
+  -DCHORD_CORE_BUILD_TESTS=ON \
+  -DCHORD_CORE_ENABLE_COVERAGE=ON \
+  -DCMAKE_BUILD_TYPE=Debug
+
+cmake --build build-coverage
+ctest --test-dir build-coverage --output-on-failure
+
+gcovr --root . \
+  --object-directory build-coverage \
+  --filter 'src/.*' \
+  --filter 'include/.*' \
+  --exclude 'tests/.*' \
+  --txt-metric branch \
+  --gcov-executable 'xcrun llvm-cov gcov' \
+  --print-summary
+```
+
+For an HTML report:
+
+```bash
+gcovr --root . \
+  --object-directory build-coverage \
+  --filter 'src/.*' \
+  --filter 'include/.*' \
+  --exclude 'tests/.*' \
+  --txt-metric branch \
+  --gcov-executable 'xcrun llvm-cov gcov' \
+  --html-details build-coverage/coverage.html
+```

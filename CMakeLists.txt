@@ -7,6 +7,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(CHORD_CORE_BUILD_TESTS "Build unit tests" ON)
+option(CHORD_CORE_ENABLE_COVERAGE "Build with line and branch coverage instrumentation" OFF)
+
+function(chord_core_enable_coverage target_name)
+    if(CHORD_CORE_ENABLE_COVERAGE)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+            target_compile_options(${target_name} PRIVATE -O0 -g --coverage)
+            target_link_options(${target_name} PRIVATE --coverage)
+        else()
+            message(FATAL_ERROR "Coverage is only supported for GCC/Clang-style compilers")
+        endif()
+    endif()
+endfunction()
 
 find_package(SndFile QUIET CONFIG)
 if(NOT TARGET SndFile::sndfile)
@@ -66,6 +78,8 @@ target_compile_options(chord_core
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
 )
 
+chord_core_enable_coverage(chord_core)
+
 add_executable(chord_core_demo
     src/main.cpp
 )
@@ -75,12 +89,15 @@ target_link_libraries(chord_core_demo
         chord_core
 )
 
+chord_core_enable_coverage(chord_core_demo)
+
 if(CHORD_CORE_BUILD_TESTS)
     include(CTest)
     if(BUILD_TESTING)
         find_package(GTest REQUIRED)
 
         add_executable(chord_core_tests
+            tests/test_audio_loader.cpp
             tests/test_chord_detector.cpp
         )
 
@@ -89,6 +106,8 @@ if(CHORD_CORE_BUILD_TESTS)
                 chord_core
                 GTest::gtest_main
         )
+
+        chord_core_enable_coverage(chord_core_tests)
 
         include(GoogleTest)
         gtest_discover_tests(chord_core_tests)
