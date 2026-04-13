@@ -34,5 +34,4 @@ Coverage is standard for this repo and should be run from a separate build tree:
 - Use C++17.
 - Prefer small concrete classes over heavy abstraction.
 - Keep public APIs minimal and stable.
-- Add comments only where DSP logic would otherwise be unclear.
 - Default to portable standard-library code unless a milestone explicitly requires an external dependency such as FFTW or libsndfile.
