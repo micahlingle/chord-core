@@ -42,7 +42,7 @@ public:
 
 ## Milestone 1: WAV Loading And RMS
 
-Status: in progress
+Status: complete
 
 Goals:
 
@@ -62,7 +62,7 @@ Current notes:
 
 ## Milestone 2: FFT And Frequency Analysis
 
-Status: in progress
+Status: complete
 
 Goals:
 
@@ -83,7 +83,7 @@ Current notes:
 
 ## Milestone 3: Chroma Extraction
 
-Status: pending
+Status: next
 
 Goals:
 

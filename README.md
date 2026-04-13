@@ -2,7 +2,7 @@
 
 C++ library to analyze audio and provide chord names.
 
-## Milestone 1
+## Current Status
 
 This repository currently provides:
 
