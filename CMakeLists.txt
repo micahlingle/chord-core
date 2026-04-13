@@ -61,6 +61,56 @@ if(NOT TARGET SndFile::sndfile)
         INTERFACE_INCLUDE_DIRECTORIES "${SNDFILE_INCLUDE_DIR}"
     )
 endif()
+
+find_package(FFTW3f QUIET CONFIG)
+find_package(FFTW3 QUIET CONFIG)
+if(NOT TARGET FFTW::fftw3f)
+    if(TARGET FFTW3::fftw3f)
+        add_library(FFTW::fftw3f INTERFACE IMPORTED)
+        set_target_properties(FFTW::fftw3f PROPERTIES
+            INTERFACE_LINK_LIBRARIES FFTW3::fftw3f
+        )
+    elseif(TARGET FFTW3f::fftw3f)
+        add_library(FFTW::fftw3f INTERFACE IMPORTED)
+        set_target_properties(FFTW::fftw3f PROPERTIES
+            INTERFACE_LINK_LIBRARIES FFTW3f::fftw3f
+        )
+    else()
+        find_package(PkgConfig QUIET)
+        if(PkgConfig_FOUND)
+            pkg_check_modules(PC_FFTW3F QUIET fftw3f)
+        endif()
+
+        find_path(FFTW3F_INCLUDE_DIR
+            NAMES fftw3.h
+            HINTS
+                ${PC_FFTW3F_INCLUDE_DIRS}
+                /opt/homebrew/include
+                /opt/homebrew/opt/fftw/include
+                /usr/local/include
+        )
+
+        find_library(FFTW3F_LIBRARY
+            NAMES fftw3f libfftw3f
+            HINTS
+                ${PC_FFTW3F_LIBRARY_DIRS}
+                /opt/homebrew/lib
+                /opt/homebrew/opt/fftw/lib
+                /usr/local/lib
+        )
+
+        if(NOT FFTW3F_INCLUDE_DIR OR NOT FFTW3F_LIBRARY)
+            message(FATAL_ERROR "FFTW single-precision library was not found. Install FFTW and/or set CMAKE_PREFIX_PATH.")
+        endif()
+
+        add_library(FFTW::fftw3f UNKNOWN IMPORTED)
+        set_target_properties(FFTW::fftw3f PROPERTIES
+            IMPORTED_LOCATION "${FFTW3F_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${FFTW3F_INCLUDE_DIR}"
+        )
+    endif()
+endif()
+
 add_library(chord_core
     src/audio_loader.cpp
     src/fft_processor.cpp
@@ -76,6 +126,7 @@ target_include_directories(chord_core
 target_link_libraries(chord_core
     PUBLIC
         SndFile::sndfile
+        FFTW::fftw3f
 )
 
 target_compile_options(chord_core

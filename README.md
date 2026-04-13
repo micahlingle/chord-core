@@ -19,12 +19,13 @@ This repository currently provides:
 - CMake 3.16+
 - A C++17 compiler
 - `libsndfile`
+- FFTW single-precision library (`fftw3f`)
 - GoogleTest (only needed when `CHORD_CORE_BUILD_TESTS=ON`)
 
 Examples:
 
-- macOS (Homebrew): `brew install libsndfile googletest`
-- Ubuntu/Debian: `sudo apt-get install libsndfile1-dev libgtest-dev`
+- macOS (Homebrew): `brew install libsndfile fftw googletest`
+- Ubuntu/Debian: `sudo apt-get install libsndfile1-dev libfftw3-dev libgtest-dev`
 
 ## Build
 
