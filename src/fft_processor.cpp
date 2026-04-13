@@ -96,29 +96,84 @@ const std::vector<float>& FFTProcessor::computeMagnitudeSpectrum(const float* sa
 }
 
 float FFTProcessor::findDominantFrequencyHz() const {
-    if (magnitudes_.size() <= 1U) {
+    FrequencyPeak peak;
+    const int peakCount =
+        findTopFrequencyPeaks(&peak, 1, kDefaultMinFrequencyHz, kDefaultMaxFrequencyHz);
+    if (peakCount == 0) {
         return 0.0f;
     }
 
-    std::size_t dominantBin = 0U;
-    float dominantMagnitude = 0.0f;
+    return peak.frequencyHz;
+}
 
-    // Ignore bin 0 because it represents DC offset, not a musical frequency.
-    for (std::size_t bin = 1U; bin < magnitudes_.size(); ++bin) {
-        if (magnitudes_[bin] > dominantMagnitude) {
-            dominantMagnitude = magnitudes_[bin];
-            dominantBin = bin;
-        }
+int FFTProcessor::findTopFrequencyPeaks(FrequencyPeak* peaks,
+                                        int maxPeaks,
+                                        float minFrequencyHz,
+                                        float maxFrequencyHz) const {
+    if (maxPeaks <= 0) {
+        return 0;
     }
 
-    if (dominantBin == 0U || dominantMagnitude == 0.0f) {
-        return 0.0f;
+    if (peaks == nullptr) {
+        throw std::invalid_argument("peaks must not be null when maxPeaks is positive");
+    }
+
+    if (minFrequencyHz < 0.0f || maxFrequencyHz <= minFrequencyHz) {
+        throw std::invalid_argument("frequency range must be non-negative and increasing");
+    }
+
+    if (magnitudes_.size() <= 2U) {
+        return 0;
+    }
+
+    const float nyquistHz = static_cast<float>(sampleRate_) * 0.5f;
+    const float clampedMaxFrequencyHz = std::min(maxFrequencyHz, nyquistHz);
+    if (clampedMaxFrequencyHz <= minFrequencyHz) {
+        return 0;
     }
 
     const float binWidthHz = static_cast<float>(sampleRate_) / static_cast<float>(fftSize_);
-    // Each FFT bin is evenly spaced in frequency, so bin index * bin width gives
-    // the center frequency represented by that bin.
-    return static_cast<float>(dominantBin) * binWidthHz;
+    const int minBin = std::max(1, static_cast<int>(std::ceil(minFrequencyHz / binWidthHz)));
+    const int maxBin = std::min(binCount_ - 2,
+                                static_cast<int>(std::floor(clampedMaxFrequencyHz / binWidthHz)));
+
+    int peakCount = 0;
+    for (int bin = minBin; bin <= maxBin; ++bin) {
+        const std::size_t binIndex = static_cast<std::size_t>(bin);
+        const float magnitude = magnitudes_[binIndex];
+        if (magnitude <= 0.0f) {
+            continue;
+        }
+
+        // A local maximum is louder than its immediate neighbors. This avoids
+        // reporting several adjacent bins from one broad spectral hotspot.
+        if (magnitude <= magnitudes_[binIndex - 1U] || magnitude < magnitudes_[binIndex + 1U]) {
+            continue;
+        }
+
+        const FrequencyPeak candidate{
+            bin,
+            static_cast<float>(bin) * binWidthHz,
+            magnitude,
+        };
+
+        int insertIndex = peakCount;
+        while (insertIndex > 0 && peaks[insertIndex - 1].magnitude < candidate.magnitude) {
+            if (insertIndex < maxPeaks) {
+                peaks[insertIndex] = peaks[insertIndex - 1];
+            }
+            --insertIndex;
+        }
+
+        if (insertIndex < maxPeaks) {
+            peaks[insertIndex] = candidate;
+            if (peakCount < maxPeaks) {
+                ++peakCount;
+            }
+        }
+    }
+
+    return peakCount;
 }
 
 int FFTProcessor::fftSize() const {

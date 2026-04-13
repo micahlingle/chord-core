@@ -59,9 +59,9 @@ Current notes:
 - `downMixInterleavedToMono` is testable independently from file I/O.
 - `chord_core_demo` provides the current file-based RMS demo.
 
-## Milestone 2: FFT And Dominant Frequency
+## Milestone 2: FFT And Frequency Analysis
 
-Status: pending
+Status: in progress
 
 Goals:
 
@@ -69,8 +69,15 @@ Goals:
 - Implement `FFTProcessor`.
 - Apply a simple analysis window before FFT.
 - Compute magnitude spectrum per block.
-- Print dominant frequency per block in the demo.
+- Print dominant and top frequencies per block in the demo.
 - Add tests that validate FFT output on known sine-wave inputs.
+
+Current notes:
+
+- `FFTProcessor` uses single-precision FFTW (`fftw3f`).
+- The demo uses 1024-sample RMS blocks and a 16384-sample FFT window.
+- Frequency peak searches are currently constrained to 75 Hz through 5 kHz for guitar-focused diagnostics.
+- Top-N peak reporting is a diagnostic tool; chroma extraction should use the full FFT magnitude spectrum.
 
 ## Milestone 3: Chroma Extraction
 

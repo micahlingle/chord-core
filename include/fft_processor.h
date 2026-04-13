@@ -6,10 +6,19 @@
 
 namespace chord {
 
+struct FrequencyPeak {
+    int binIndex = 0;
+    float frequencyHz = 0.0f;
+    float magnitude = 0.0f;
+};
+
 // Converts a fixed-size block of time-domain audio samples into frequency-bin
 // magnitudes. This is the first DSP stage needed before chroma extraction.
 class FFTProcessor {
 public:
+    static constexpr float kDefaultMinFrequencyHz = 75.0f;
+    static constexpr float kDefaultMaxFrequencyHz = 5000.0f;
+
     // fftSize is the number of time-domain samples analyzed per transform.
     // sampleRate is needed to convert FFT bin indices back into Hertz.
     FFTProcessor(int fftSize, int sampleRate);
@@ -26,7 +35,14 @@ public:
     // frequencies at binIndex * sampleRate / fftSize.
     const std::vector<float>& computeMagnitudeSpectrum(const float* samples, int numSamples);
 
-    // Returns the loudest non-DC bin from the most recent spectrum as Hertz.
+    // Finds local maxima in the most recent spectrum within a frequency band.
+    // The caller owns the output buffer so this can run without allocation.
+    int findTopFrequencyPeaks(FrequencyPeak* peaks,
+                              int maxPeaks,
+                              float minFrequencyHz,
+                              float maxFrequencyHz) const;
+
+    // Returns the loudest guitar-range peak from the most recent spectrum.
     float findDominantFrequencyHz() const;
 
     int fftSize() const;

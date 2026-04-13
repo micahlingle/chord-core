@@ -183,6 +183,7 @@ if(CHORD_CORE_BUILD_TESTS)
                     --gcov-executable "${CHORD_CORE_GCOV_EXECUTABLE}"
                     --print-summary
                     --html-details ${CMAKE_BINARY_DIR}/coverage.html
+                    ${CMAKE_BINARY_DIR}
                 DEPENDS chord_core_tests
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 COMMENT "Running unit tests and generating line/branch coverage"

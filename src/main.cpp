@@ -1,6 +1,7 @@
 #include "audio_loader.h"
 #include "fft_processor.h"
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <exception>
@@ -11,6 +12,10 @@
 namespace {
 
 constexpr int kBlockSize = 1024;
+constexpr int kFftSize = 16384;
+constexpr int kTopFrequencyCount = 3;
+constexpr float kMinFrequencyHz = 75.0f;
+constexpr float kMaxFrequencyHz = 5000.0f;
 
 float computeRms(const float* samples, int numSamples) {
     if (samples == nullptr || numSamples <= 0) {
@@ -45,7 +50,7 @@ int main(int argc, char** argv) {
         std::cout << "Channels: " << audioFile.channelCount << " (processed as mono)\n";
         std::cout << "Samples: " << audioFile.samples.size() << '\n';
 
-        chord::FFTProcessor fftProcessor(kBlockSize, audioFile.sampleRate);
+        chord::FFTProcessor fftProcessor(kFftSize, audioFile.sampleRate);
 
         const std::size_t totalBlocks =
             (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
@@ -56,10 +61,17 @@ int main(int argc, char** argv) {
             const std::size_t remaining = audioFile.samples.size() - start;
             const int blockSamples =
                 static_cast<int>(remaining < static_cast<std::size_t>(kBlockSize) ? remaining : kBlockSize);
+            const int fftSamples =
+                static_cast<int>(remaining < static_cast<std::size_t>(kFftSize) ? remaining : kFftSize);
 
             const float rms = computeRms(audioFile.samples.data() + start, blockSamples);
-            fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, blockSamples);
+            fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, fftSamples);
             const float dominantFrequencyHz = fftProcessor.findDominantFrequencyHz();
+            std::array<chord::FrequencyPeak, kTopFrequencyCount> topPeaks{};
+            const int topPeakCount = fftProcessor.findTopFrequencyPeaks(topPeaks.data(),
+                                                                        static_cast<int>(topPeaks.size()),
+                                                                        kMinFrequencyHz,
+                                                                        kMaxFrequencyHz);
             const double startTimeSeconds =
                 static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
 
@@ -68,7 +80,14 @@ int main(int argc, char** argv) {
                       << " samples=" << blockSamples
                       << " rms=" << std::setprecision(6) << rms
                       << " dominant_frequency_hz=" << std::setprecision(2) << dominantFrequencyHz
-                      << '\n';
+                      << " top_frequencies_hz=[";
+            for (int peakIndex = 0; peakIndex < topPeakCount; ++peakIndex) {
+                if (peakIndex > 0) {
+                    std::cout << ',';
+                }
+                std::cout << std::setprecision(2) << topPeaks[static_cast<std::size_t>(peakIndex)].frequencyHz;
+            }
+            std::cout << "]\n";
         }
     } catch (const std::exception& exception) {
         std::cerr << "Error: " << exception.what() << '\n';

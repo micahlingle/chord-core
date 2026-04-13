@@ -10,7 +10,8 @@ This repository currently provides:
 - WAV loading through `libsndfile`
 - Block-based file processing with a default block size of 1024 samples
 - RMS calculation and console output for each block
-- Stubbed library components for the later FFT, chroma, and chord-detection milestones
+- FFTW-based frequency analysis with guitar-focused top-frequency reporting
+- Stubbed library components for the later chroma and chord-detection milestones
 
 ![Chord Core Milestone 1 architecture](docs/chord-core-milestone1-architecture.svg)
 
@@ -38,6 +39,12 @@ cmake --build build
 
 ```bash
 ./build/chord_core_demo /path/to/file.wav
+```
+
+The demo prints one line per 1024-sample RMS block. Frequency analysis uses a larger 16384-sample FFT window and reports peaks between 75 Hz and 5 kHz:
+
+```text
+Block 0 start=0.000s samples=1024 rms=0.000285 dominant_frequency_hz=257.81 top_frequencies_hz=[257.81,278.32,290.04]
 ```
 
 ## Test
