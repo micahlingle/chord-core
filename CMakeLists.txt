@@ -156,6 +156,7 @@ if(CHORD_CORE_BUILD_TESTS)
         add_executable(chord_core_tests
             tests/test_audio_loader.cpp
             tests/test_chord_detector.cpp
+            tests/test_fft_processor.cpp
         )
 
         target_link_libraries(chord_core_tests
