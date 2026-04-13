@@ -1,4 +1,5 @@
 #include "audio_loader.h"
+#include "fft_processor.h"
 
 #include <cmath>
 #include <cstddef>
@@ -44,6 +45,8 @@ int main(int argc, char** argv) {
         std::cout << "Channels: " << audioFile.channelCount << " (processed as mono)\n";
         std::cout << "Samples: " << audioFile.samples.size() << '\n';
 
+        chord::FFTProcessor fftProcessor(kBlockSize, audioFile.sampleRate);
+
         const std::size_t totalBlocks =
             (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
             static_cast<std::size_t>(kBlockSize);
@@ -55,6 +58,8 @@ int main(int argc, char** argv) {
                 static_cast<int>(remaining < static_cast<std::size_t>(kBlockSize) ? remaining : kBlockSize);
 
             const float rms = computeRms(audioFile.samples.data() + start, blockSamples);
+            fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, blockSamples);
+            const float dominantFrequencyHz = fftProcessor.findDominantFrequencyHz();
             const double startTimeSeconds =
                 static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
 
@@ -62,6 +67,7 @@ int main(int argc, char** argv) {
                       << " start=" << std::fixed << std::setprecision(3) << startTimeSeconds << "s"
                       << " samples=" << blockSamples
                       << " rms=" << std::setprecision(6) << rms
+                      << " dominant_frequency_hz=" << std::setprecision(2) << dominantFrequencyHz
                       << '\n';
         }
     } catch (const std::exception& exception) {
