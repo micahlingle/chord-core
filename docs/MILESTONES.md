@@ -57,6 +57,7 @@ Current notes:
 
 - `AudioLoader` loads and downmixes file input to mono.
 - `downMixInterleavedToMono` is testable independently from file I/O.
+- `signal_analysis` provides RMS and activity-threshold helpers.
 - `chord_core_demo` provides the current file-based RMS demo.
 
 ## Milestone 2: FFT And Frequency Analysis
@@ -77,6 +78,7 @@ Current notes:
 - `FFTProcessor` uses single-precision FFTW (`fftw3f`).
 - The demo uses 1024-sample RMS blocks and a 16384-sample FFT window.
 - Frequency peak searches are currently constrained to 75 Hz through 5 kHz for guitar-focused diagnostics.
+- Demo frequency reporting is gated by a `0.01` RMS activity threshold.
 - Top-N peak reporting is a diagnostic tool; chroma extraction should use the full FFT magnitude spectrum.
 
 ## Milestone 3: Chroma Extraction

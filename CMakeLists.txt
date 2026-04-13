@@ -116,6 +116,7 @@ add_library(chord_core
     src/fft_processor.cpp
     src/chroma_extractor.cpp
     src/chord_detector.cpp
+    src/signal_analysis.cpp
 )
 
 target_include_directories(chord_core
@@ -157,6 +158,7 @@ if(CHORD_CORE_BUILD_TESTS)
             tests/test_audio_loader.cpp
             tests/test_chord_detector.cpp
             tests/test_fft_processor.cpp
+            tests/test_signal_analysis.cpp
         )
 
         target_link_libraries(chord_core_tests

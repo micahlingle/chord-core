@@ -1,8 +1,8 @@
 #include "audio_loader.h"
 #include "fft_processor.h"
+#include "signal_analysis.h"
 
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <exception>
 #include <iomanip>
@@ -16,20 +16,7 @@ constexpr int kFftSize = 16384;
 constexpr int kTopFrequencyCount = 3;
 constexpr float kMinFrequencyHz = 75.0f;
 constexpr float kMaxFrequencyHz = 5000.0f;
-
-float computeRms(const float* samples, int numSamples) {
-    if (samples == nullptr || numSamples <= 0) {
-        return 0.0f;
-    }
-
-    float sumSquares = 0.0f;
-    for (int index = 0; index < numSamples; ++index) {
-        const float sample = samples[index];
-        sumSquares += sample * sample;
-    }
-
-    return std::sqrt(sumSquares / static_cast<float>(numSamples));
-}
+constexpr float kActivityRmsThreshold = 0.01f;
 
 }  // namespace
 
@@ -64,14 +51,19 @@ int main(int argc, char** argv) {
             const int fftSamples =
                 static_cast<int>(remaining < static_cast<std::size_t>(kFftSize) ? remaining : kFftSize);
 
-            const float rms = computeRms(audioFile.samples.data() + start, blockSamples);
-            fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, fftSamples);
-            const float dominantFrequencyHz = fftProcessor.findDominantFrequencyHz();
+            const float rms = chord::computeRms(audioFile.samples.data() + start, blockSamples);
+            const bool isActive = chord::isSignalActive(rms, kActivityRmsThreshold);
+            float dominantFrequencyHz = 0.0f;
             std::array<chord::FrequencyPeak, kTopFrequencyCount> topPeaks{};
-            const int topPeakCount = fftProcessor.findTopFrequencyPeaks(topPeaks.data(),
-                                                                        static_cast<int>(topPeaks.size()),
-                                                                        kMinFrequencyHz,
-                                                                        kMaxFrequencyHz);
+            int topPeakCount = 0;
+            if (isActive) {
+                fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, fftSamples);
+                dominantFrequencyHz = fftProcessor.findDominantFrequencyHz();
+                topPeakCount = fftProcessor.findTopFrequencyPeaks(topPeaks.data(),
+                                                                  static_cast<int>(topPeaks.size()),
+                                                                  kMinFrequencyHz,
+                                                                  kMaxFrequencyHz);
+            }
             const double startTimeSeconds =
                 static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
 
@@ -79,6 +71,7 @@ int main(int argc, char** argv) {
                       << " start=" << std::fixed << std::setprecision(3) << startTimeSeconds << "s"
                       << " samples=" << blockSamples
                       << " rms=" << std::setprecision(6) << rms
+                      << " active=" << (isActive ? "yes" : "no")
                       << " dominant_frequency_hz=" << std::setprecision(2) << dominantFrequencyHz
                       << " top_frequencies_hz=[";
             for (int peakIndex = 0; peakIndex < topPeakCount; ++peakIndex) {
