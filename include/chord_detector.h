@@ -1,13 +1,8 @@
 #pragma once
 
-#include <string>
+#include "chord_result.h"
 
 namespace chord {
-
-struct ChordResult {
-    std::string name = "Unknown";
-    float confidence = 0.0f;
-};
 
 class ChordDetector {
 public:

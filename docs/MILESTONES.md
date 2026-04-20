@@ -83,7 +83,7 @@ Current notes:
 
 ## Milestone 3: Chroma Extraction
 
-Status: in progress
+Status: complete
 
 Goals:
 
@@ -100,7 +100,7 @@ Current notes:
 
 ## Milestone 4: Chord Template Matching
 
-Status: pending
+Status: in progress
 
 Goals:
 
@@ -108,6 +108,11 @@ Goals:
 - Compare normalized chroma vectors against templates.
 - Return chord name and confidence.
 - Add tests for known major/minor synthetic inputs.
+
+Current notes:
+
+- `ChordTemplateMatcher` compares chroma against 24 major/minor triad templates.
+- Matching uses cosine similarity so confidence is based on pitch-class shape rather than absolute level.
 
 ## Milestone 5: Temporal Smoothing
 

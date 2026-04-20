@@ -115,6 +115,7 @@ add_library(chord_core
     src/audio_loader.cpp
     src/fft_processor.cpp
     src/chroma_extractor.cpp
+    src/chord_template_matcher.cpp
     src/chord_detector.cpp
     src/signal_analysis.cpp
 )
@@ -158,6 +159,7 @@ if(CHORD_CORE_BUILD_TESTS)
             tests/test_audio_loader.cpp
             tests/test_chroma_extractor.cpp
             tests/test_chord_detector.cpp
+            tests/test_chord_template_matcher.cpp
             tests/test_fft_processor.cpp
             tests/test_signal_analysis.cpp
         )
