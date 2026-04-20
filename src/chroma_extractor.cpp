@@ -80,8 +80,9 @@ ChromaVector ChromaExtractor::extract(const std::vector<float>& magnitudes,
 
     // Normalize by the strongest pitch class so downstream chord matching can
     // compare relative pitch-class shape instead of absolute recording volume.
+    const float maxValue = *maxElement;
     for (float& value : chroma) {
-        value /= *maxElement;
+        value /= maxValue;
     }
 
     return chroma;

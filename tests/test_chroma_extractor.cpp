@@ -64,6 +64,9 @@ TEST(ChromaExtractorTest, ExtractsNormalizedChromaFromMagnitudeSpectrum) {
     EXPECT_FLOAT_EQ(chroma[static_cast<std::size_t>(chord::kPitchClassA)], 1.0f);
     EXPECT_GT(chroma[static_cast<std::size_t>(chord::kPitchClassC)], 0.0f);
     EXPECT_LT(chroma[static_cast<std::size_t>(chord::kPitchClassC)], 1.0f);
+    for (float value : chroma) {
+        EXPECT_LE(value, 1.0f);
+    }
 }
 
 TEST(ChromaExtractorTest, ReturnsZeroChromaForSilence) {
