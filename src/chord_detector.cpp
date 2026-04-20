@@ -12,15 +12,18 @@ ChordDetector::ChordDetector()
                     kDefaultSampleRate,
                     kDefaultActivityThreshold,
                     kDefaultMinFrequencyHz,
-                    kDefaultMaxFrequencyHz) {}
+                    kDefaultMaxFrequencyHz,
+                    kDefaultRequiredStableFrames) {}
 
 ChordDetector::ChordDetector(int fftSize,
                              int sampleRate,
                              float activityThreshold,
                              float minFrequencyHz,
-                             float maxFrequencyHz)
+                             float maxFrequencyHz,
+                             int requiredStableFrames)
     : fftProcessor_(fftSize, sampleRate),
       chromaExtractor_(fftSize, sampleRate),
+      temporalSmoother_(requiredStableFrames),
       activityThreshold_(activityThreshold),
       minFrequencyHz_(minFrequencyHz),
       maxFrequencyHz_(maxFrequencyHz) {
@@ -44,13 +47,13 @@ void ChordDetector::processBlock(const float* samples, int numSamples) {
 
     const float rms = computeRms(samples, numSamples);
     if (!isSignalActive(rms, activityThreshold_)) {
-        currentChord_ = {};
+        currentChord_ = temporalSmoother_.smooth({});
         return;
     }
 
     const std::vector<float>& magnitudes = fftProcessor_.computeMagnitudeSpectrum(samples, numSamples);
     const ChromaVector chroma = chromaExtractor_.extract(magnitudes, minFrequencyHz_, maxFrequencyHz_);
-    currentChord_ = chordMatcher_.match(chroma);
+    currentChord_ = temporalSmoother_.smooth(chordMatcher_.match(chroma));
 }
 
 ChordResult ChordDetector::getCurrentChord() const {

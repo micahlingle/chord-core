@@ -64,7 +64,7 @@ TEST(ChordDetectorTest, DetectsMajorChordFromSyntheticTriad) {
     addSineWave(samples, kSampleRate, 329.63f, 0.3f); // E4
     addSineWave(samples, kSampleRate, 392.00f, 0.3f); // G4
 
-    chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f);
+    chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f, 75.0f, 5000.0f, 1);
     detector.processBlock(samples.data(), static_cast<int>(samples.size()));
     const chord::ChordResult result = detector.getCurrentChord();
 
@@ -81,10 +81,31 @@ TEST(ChordDetectorTest, DetectsMinorChordFromSyntheticTriad) {
     addSineWave(samples, kSampleRate, 261.63f, 0.3f); // C4
     addSineWave(samples, kSampleRate, 329.63f, 0.3f); // E4
 
-    chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f);
+    chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f, 75.0f, 5000.0f, 1);
     detector.processBlock(samples.data(), static_cast<int>(samples.size()));
     const chord::ChordResult result = detector.getCurrentChord();
 
     EXPECT_EQ(result.name, "A minor");
     EXPECT_GT(result.confidence, 0.8f);
+}
+
+TEST(ChordDetectorTest, AppliesDefaultTemporalSmoothing) {
+    constexpr int kFftSize = 16384;
+    constexpr int kSampleRate = 48000;
+
+    std::vector<float> samples(static_cast<std::size_t>(kFftSize), 0.0f);
+    addSineWave(samples, kSampleRate, 261.63f, 0.3f); // C4
+    addSineWave(samples, kSampleRate, 329.63f, 0.3f); // E4
+    addSineWave(samples, kSampleRate, 392.00f, 0.3f); // G4
+
+    chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f);
+
+    detector.processBlock(samples.data(), static_cast<int>(samples.size()));
+    EXPECT_EQ(detector.getCurrentChord().name, "Unknown");
+
+    detector.processBlock(samples.data(), static_cast<int>(samples.size()));
+    EXPECT_EQ(detector.getCurrentChord().name, "Unknown");
+
+    detector.processBlock(samples.data(), static_cast<int>(samples.size()));
+    EXPECT_EQ(detector.getCurrentChord().name, "C major");
 }

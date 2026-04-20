@@ -120,7 +120,7 @@ Current notes:
 
 ## Milestone 5: Temporal Smoothing
 
-Status: pending
+Status: complete
 
 Goals:
 
@@ -128,6 +128,11 @@ Goals:
 - Stabilize chord output across adjacent blocks.
 - Avoid allocations in real-time processing paths.
 - Add tests for smoothing behavior across short chord sequences.
+
+Current notes:
+
+- `TemporalSmoother` requires the same non-Unknown chord to appear for a configurable number of consecutive frames before reporting it.
+- Silence or inactive input resets the smoothed result to `Unknown` immediately.
 
 ## Testing Plan
 

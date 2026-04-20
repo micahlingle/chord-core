@@ -14,6 +14,7 @@ This repository currently provides:
 - FFTW-based frequency analysis with guitar-focused top-frequency reporting
 - Chroma extraction that maps FFT-bin energy into 12 normalized pitch classes
 - Chord detection through the reusable `ChordDetector` API
+- Temporal smoothing to reduce frame-to-frame chord jitter
 - A verbose analyzer executable for DSP debugging and tuning
 
 ![Chord Core Milestone 1 architecture](docs/chord-core-milestone1-architecture.svg)

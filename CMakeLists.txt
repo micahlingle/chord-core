@@ -134,6 +134,7 @@ add_library(chord_core
     src/chord_template_matcher.cpp
     src/chord_detector.cpp
     src/signal_analysis.cpp
+    src/temporal_smoother.cpp
 )
 
 target_include_directories(chord_core
@@ -199,6 +200,7 @@ if(CHORD_CORE_BUILD_TESTS)
             tests/test_chord_template_matcher.cpp
             tests/test_fft_processor.cpp
             tests/test_signal_analysis.cpp
+            tests/test_temporal_smoother.cpp
         )
 
         target_link_libraries(chord_core_tests
