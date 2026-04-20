@@ -1,4 +1,5 @@
 #include "audio_loader.h"
+#include "chroma_extractor.h"
 #include "fft_processor.h"
 #include "signal_analysis.h"
 
@@ -8,6 +9,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -17,6 +19,9 @@ constexpr int kTopFrequencyCount = 3;
 constexpr float kMinFrequencyHz = 75.0f;
 constexpr float kMaxFrequencyHz = 5000.0f;
 constexpr float kActivityRmsThreshold = 0.01f;
+constexpr std::array<const char*, 12> kPitchClassNames = {
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+};
 
 }  // namespace
 
@@ -38,6 +43,7 @@ int main(int argc, char** argv) {
         std::cout << "Samples: " << audioFile.samples.size() << '\n';
 
         chord::FFTProcessor fftProcessor(kFftSize, audioFile.sampleRate);
+        chord::ChromaExtractor chromaExtractor(kFftSize, audioFile.sampleRate);
 
         const std::size_t totalBlocks =
             (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
@@ -56,13 +62,16 @@ int main(int argc, char** argv) {
             float dominantFrequencyHz = 0.0f;
             std::array<chord::FrequencyPeak, kTopFrequencyCount> topPeaks{};
             int topPeakCount = 0;
+            chord::ChromaVector chroma{};
             if (isActive) {
-                fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, fftSamples);
+                const std::vector<float>& magnitudes =
+                    fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, fftSamples);
                 dominantFrequencyHz = fftProcessor.findDominantFrequencyHz();
                 topPeakCount = fftProcessor.findTopFrequencyPeaks(topPeaks.data(),
                                                                   static_cast<int>(topPeaks.size()),
                                                                   kMinFrequencyHz,
                                                                   kMaxFrequencyHz);
+                chroma = chromaExtractor.extract(magnitudes, kMinFrequencyHz, kMaxFrequencyHz);
             }
             const double startTimeSeconds =
                 static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
@@ -79,6 +88,14 @@ int main(int argc, char** argv) {
                     std::cout << ',';
                 }
                 std::cout << std::setprecision(2) << topPeaks[static_cast<std::size_t>(peakIndex)].frequencyHz;
+            }
+            std::cout << "] chroma=[";
+            for (std::size_t pitchClass = 0; pitchClass < chroma.size(); ++pitchClass) {
+                if (pitchClass > 0U) {
+                    std::cout << ',';
+                }
+                std::cout << kPitchClassNames[pitchClass]
+                          << '=' << std::setprecision(2) << chroma[pitchClass];
             }
             std::cout << "]\n";
         }

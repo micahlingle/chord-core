@@ -83,7 +83,7 @@ Current notes:
 
 ## Milestone 3: Chroma Extraction
 
-Status: next
+Status: in progress
 
 Goals:
 
@@ -91,6 +91,12 @@ Goals:
 - Map FFT bins to pitch classes.
 - Normalize chroma vectors.
 - Add tests for known frequency-to-pitch-class mappings.
+
+Current notes:
+
+- `ChromaExtractor` maps each FFT magnitude bin into the nearest equal-tempered pitch class using A4 = 440 Hz.
+- Chroma vectors are normalized by the strongest pitch class so later template matching can compare pitch-class shape instead of absolute signal level.
+- The demo prints chroma vectors for active blocks using the same 75 Hz to 5 kHz analysis band as the frequency diagnostics.
 
 ## Milestone 4: Chord Template Matching
 
