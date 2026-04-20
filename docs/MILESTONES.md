@@ -113,7 +113,8 @@ Current notes:
 
 - `ChordTemplateMatcher` compares chroma against 24 major/minor triad templates.
 - Matching uses cosine similarity so confidence is based on pitch-class shape rather than absolute level.
-- The demo prints the best chord-template match and confidence for active blocks.
+- The public demo exercises `ChordDetector` and prints concise chord/confidence output.
+- `chord_core_analyze` prints RMS, activity, FFT peaks, chroma, chord, and confidence for DSP debugging and tuning.
 - `ChordDetector` now runs the reusable block-processing path: RMS/activity gate, FFT, chroma extraction, and template matching.
 - Temporal smoothing is intentionally not part of this milestone and remains the next stabilization layer.
 

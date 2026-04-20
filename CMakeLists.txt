@@ -150,6 +150,17 @@ target_link_libraries(chord_core_demo
 
 chord_core_enable_coverage(chord_core_demo)
 
+add_executable(chord_core_analyze
+    src/analyze_main.cpp
+)
+
+target_link_libraries(chord_core_analyze
+    PRIVATE
+        chord_core
+)
+
+chord_core_enable_coverage(chord_core_analyze)
+
 if(CHORD_CORE_BUILD_TESTS)
     include(CTest)
     if(BUILD_TESTING)
