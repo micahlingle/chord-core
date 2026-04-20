@@ -100,7 +100,7 @@ Current notes:
 
 ## Milestone 4: Chord Template Matching
 
-Status: in progress
+Status: complete
 
 Goals:
 
@@ -114,7 +114,8 @@ Current notes:
 - `ChordTemplateMatcher` compares chroma against 24 major/minor triad templates.
 - Matching uses cosine similarity so confidence is based on pitch-class shape rather than absolute level.
 - The demo prints the best chord-template match and confidence for active blocks.
-- Reusable `ChordDetector` integration is still pending and should remain separate from the file-demo path.
+- `ChordDetector` now runs the reusable block-processing path: RMS/activity gate, FFT, chroma extraction, and template matching.
+- Temporal smoothing is intentionally not part of this milestone and remains the next stabilization layer.
 
 ## Milestone 5: Temporal Smoothing
 
