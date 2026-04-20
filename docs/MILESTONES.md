@@ -113,6 +113,8 @@ Current notes:
 
 - `ChordTemplateMatcher` compares chroma against 24 major/minor triad templates.
 - Matching uses cosine similarity so confidence is based on pitch-class shape rather than absolute level.
+- The demo prints the best chord-template match and confidence for active blocks.
+- Reusable `ChordDetector` integration is still pending and should remain separate from the file-demo path.
 
 ## Milestone 5: Temporal Smoothing
 

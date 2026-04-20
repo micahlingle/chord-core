@@ -43,10 +43,10 @@ cmake --build build
 ./build/chord_core_demo /path/to/file.wav
 ```
 
-The demo prints one line per 1024-sample RMS block. Blocks below the current activity threshold (`0.01` RMS) are marked inactive and do not report FFT peaks or chroma energy. Active-block frequency analysis uses a larger 16384-sample FFT window, reports peaks between 75 Hz and 5 kHz, and prints a normalized 12-bin chroma vector:
+The demo prints one line per 1024-sample RMS block. Blocks below the current activity threshold (`0.01` RMS) are marked inactive and do not report FFT peaks or chroma energy. Active-block frequency analysis uses a larger 16384-sample FFT window, reports peaks between 75 Hz and 5 kHz, prints a normalized 12-bin chroma vector, and reports the best major/minor chord-template match:
 
 ```text
-Block 273 start=5.824s samples=1024 rms=0.016707 active=yes dominant_frequency_hz=164.06 top_frequencies_hz=[164.06,123.05,82.03] chroma=[C=0.09,C#=0.16,D=0.39,D#=0.23,E=1.00,F=0.48,F#=0.25,G=0.55,G#=0.21,A=0.15,A#=0.07,B=0.78]
+Block 273 start=5.824s samples=1024 rms=0.016707 active=yes dominant_frequency_hz=164.06 top_frequencies_hz=[164.06,123.05,82.03] chroma=[C=0.09,C#=0.16,D=0.39,D#=0.23,E=1.00,F=0.48,F#=0.25,G=0.55,G#=0.21,A=0.15,A#=0.07,B=0.78] chord="E minor" confidence=0.79
 ```
 
 ## Test

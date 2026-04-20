@@ -1,5 +1,6 @@
 #include "audio_loader.h"
 #include "chroma_extractor.h"
+#include "chord_template_matcher.h"
 #include "fft_processor.h"
 #include "signal_analysis.h"
 
@@ -44,6 +45,7 @@ int main(int argc, char** argv) {
 
         chord::FFTProcessor fftProcessor(kFftSize, audioFile.sampleRate);
         chord::ChromaExtractor chromaExtractor(kFftSize, audioFile.sampleRate);
+        chord::ChordTemplateMatcher chordMatcher;
 
         const std::size_t totalBlocks =
             (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
@@ -63,6 +65,7 @@ int main(int argc, char** argv) {
             std::array<chord::FrequencyPeak, kTopFrequencyCount> topPeaks{};
             int topPeakCount = 0;
             chord::ChromaVector chroma{};
+            chord::ChordResult chordResult{};
             if (isActive) {
                 const std::vector<float>& magnitudes =
                     fftProcessor.computeMagnitudeSpectrum(audioFile.samples.data() + start, fftSamples);
@@ -72,6 +75,7 @@ int main(int argc, char** argv) {
                                                                   kMinFrequencyHz,
                                                                   kMaxFrequencyHz);
                 chroma = chromaExtractor.extract(magnitudes, kMinFrequencyHz, kMaxFrequencyHz);
+                chordResult = chordMatcher.match(chroma);
             }
             const double startTimeSeconds =
                 static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
@@ -97,7 +101,9 @@ int main(int argc, char** argv) {
                 std::cout << kPitchClassNames[pitchClass]
                           << '=' << std::setprecision(2) << chroma[pitchClass];
             }
-            std::cout << "]\n";
+            std::cout << "] chord=\"" << chordResult.name << '"'
+                      << " confidence=" << std::setprecision(2) << chordResult.confidence
+                      << '\n';
         }
     } catch (const std::exception& exception) {
         std::cerr << "Error: " << exception.what() << '\n';
