@@ -11,6 +11,22 @@ option(CHORD_CORE_ENABLE_COVERAGE "Build with line and branch coverage instrumen
 set(CHORD_CORE_GCOVR_EXECUTABLE "gcovr" CACHE STRING "gcovr executable used by the coverage target")
 set(CHORD_CORE_GCOV_EXECUTABLE "gcov" CACHE STRING "gcov-compatible executable used by gcovr")
 
+find_program(CHORD_CORE_CLANG_FORMAT_EXECUTABLE
+    NAMES
+        clang-format
+        clang-format-18
+        clang-format-17
+        clang-format-16
+        clang-format-15
+    REQUIRED
+)
+
+file(GLOB_RECURSE CHORD_CORE_FORMAT_FILES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
+)
+
 if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
     set(CHORD_CORE_GCOV_EXECUTABLE "xcrun llvm-cov gcov" CACHE STRING "gcov-compatible executable used by gcovr" FORCE)
 endif()
@@ -160,6 +176,16 @@ target_link_libraries(chord_core_analyze
 )
 
 chord_core_enable_coverage(chord_core_analyze)
+
+add_custom_target(format
+    ALL
+    COMMAND ${CHORD_CORE_CLANG_FORMAT_EXECUTABLE} -i ${CHORD_CORE_FORMAT_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Formatting C++ sources with clang-format"
+    VERBATIM
+)
+
+add_dependencies(chord_core format)
 
 if(CHORD_CORE_BUILD_TESTS)
     include(CTest)

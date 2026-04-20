@@ -24,12 +24,13 @@ This repository currently provides:
 - A C++17 compiler
 - `libsndfile`
 - FFTW single-precision library (`fftw3f`)
+- clang-format
 - GoogleTest (only needed when `CHORD_CORE_BUILD_TESTS=ON`)
 
 Examples:
 
-- macOS (Homebrew): `brew install libsndfile fftw googletest`
-- Ubuntu/Debian: `sudo apt-get install libsndfile1-dev libfftw3-dev libgtest-dev`
+- macOS (Homebrew): `brew install libsndfile fftw googletest clang-format`
+- Ubuntu/Debian: `sudo apt-get install libsndfile1-dev libfftw3-dev libgtest-dev clang-format`
 
 ## Build
 
@@ -88,6 +89,21 @@ For a faster test-only build without coverage:
 cmake -S . -B build -DCHORD_CORE_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build --output-on-failure
+```
+
+## Format
+
+The project requires clang-format at CMake configure time. The normal build automatically formats C++ files under
+`include/`, `src/`, and `tests/` before compiling:
+
+```bash
+cmake --build build
+```
+
+To run only the formatter:
+
+```bash
+cmake --build build --target format
 ```
 
 ## Coverage
