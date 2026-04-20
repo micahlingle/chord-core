@@ -12,7 +12,7 @@ void setPitch(chord::ChromaVector& chroma, chord::PitchClass pitchClass, float v
     chroma[static_cast<std::size_t>(pitchClass)] = value;
 }
 
-}  // namespace
+} // namespace
 
 TEST(ChordTemplateMatcherTest, ReturnsUnknownForSilence) {
     const chord::ChordTemplateMatcher matcher;

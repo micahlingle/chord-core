@@ -11,7 +11,7 @@ namespace {
 
 constexpr int kBlockSize = 1024;
 
-}  // namespace
+} // namespace
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -32,9 +32,8 @@ int main(int argc, char** argv) {
 
         chord::ChordDetector detector(chord::ChordDetector::kDefaultFftSize, audioFile.sampleRate);
 
-        const std::size_t totalBlocks =
-            (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
-            static_cast<std::size_t>(kBlockSize);
+        const std::size_t totalBlocks = (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
+                                        static_cast<std::size_t>(kBlockSize);
 
         for (std::size_t blockIndex = 0; blockIndex < totalBlocks; ++blockIndex) {
             const std::size_t start = blockIndex * static_cast<std::size_t>(kBlockSize);
@@ -44,15 +43,16 @@ int main(int argc, char** argv) {
 
             detector.processBlock(audioFile.samples.data() + start, blockSamples);
             const chord::ChordResult chordResult = detector.getCurrentChord();
-            const double startTimeSeconds =
-                static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
+            const double startTimeSeconds = static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
 
+            // clang-format off
             std::cout << "Block " << blockIndex
                       << " start=" << std::fixed << std::setprecision(3) << startTimeSeconds << "s"
                       << " samples=" << blockSamples
                       << " chord=\"" << chordResult.name << '"'
                       << " confidence=" << std::setprecision(2) << chordResult.confidence
                       << '\n';
+            // clang-format on
         }
     } catch (const std::exception& exception) {
         std::cerr << "Error: " << exception.what() << '\n';

@@ -31,7 +31,7 @@ bool isNearFrequency(float actualFrequencyHz, float expectedFrequencyHz, float t
     return std::fabs(actualFrequencyHz - expectedFrequencyHz) <= toleranceHz;
 }
 
-}  // namespace
+} // namespace
 
 TEST(FFTProcessorTest, RejectsInvalidConfiguration) {
     EXPECT_THROW(chord::FFTProcessor(0, 48000), std::invalid_argument);

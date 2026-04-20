@@ -14,10 +14,11 @@ constexpr float kReferenceFrequencyHz = 440.0f;
 constexpr int kReferenceMidiNote = 69;
 constexpr int kPitchClassCount = 12;
 
-}  // namespace
+} // namespace
 
 ChromaExtractor::ChromaExtractor(int fftSize, int sampleRate)
-    : fftSize_(fftSize), sampleRate_(sampleRate) {
+    : fftSize_(fftSize),
+      sampleRate_(sampleRate) {
     if (fftSize_ <= 0) {
         throw std::invalid_argument("fftSize must be positive");
     }
@@ -29,9 +30,8 @@ ChromaExtractor::ChromaExtractor(int fftSize, int sampleRate)
     binCount_ = fftSize_ / 2 + 1;
 }
 
-ChromaVector ChromaExtractor::extract(const std::vector<float>& magnitudes,
-                                      float minFrequencyHz,
-                                      float maxFrequencyHz) const {
+ChromaVector
+ChromaExtractor::extract(const std::vector<float>& magnitudes, float minFrequencyHz, float maxFrequencyHz) const {
     if (static_cast<int>(magnitudes.size()) != binCount_) {
         throw std::invalid_argument("magnitude vector size must match FFT bin count");
     }
@@ -57,8 +57,7 @@ ChromaVector ChromaExtractor::extract(const std::vector<float>& magnitudes,
     // Skip bin 0 because it is DC offset. The min/max bins let callers focus on
     // the useful musical band and ignore rumble or very high-frequency noise.
     const int minBin = std::max(1, static_cast<int>(std::ceil(minFrequencyHz / binWidthHz)));
-    const int maxBin = std::min(binCount_ - 1,
-                                static_cast<int>(std::floor(clampedMaxFrequencyHz / binWidthHz)));
+    const int maxBin = std::min(binCount_ - 1, static_cast<int>(std::floor(clampedMaxFrequencyHz / binWidthHz)));
 
     for (int bin = minBin; bin <= maxBin; ++bin) {
         const float magnitude = magnitudes[static_cast<std::size_t>(bin)];
@@ -117,4 +116,4 @@ int ChromaExtractor::binCount() const {
     return binCount_;
 }
 
-}  // namespace chord
+} // namespace chord

@@ -21,10 +21,21 @@ constexpr float kMinFrequencyHz = 75.0f;
 constexpr float kMaxFrequencyHz = 5000.0f;
 constexpr float kActivityRmsThreshold = 0.01f;
 constexpr std::array<const char*, 12> kPitchClassNames = {
-    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
 };
 
-}  // namespace
+} // namespace
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -47,9 +58,8 @@ int main(int argc, char** argv) {
         chord::ChromaExtractor chromaExtractor(kFftSize, audioFile.sampleRate);
         chord::ChordTemplateMatcher chordMatcher;
 
-        const std::size_t totalBlocks =
-            (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
-            static_cast<std::size_t>(kBlockSize);
+        const std::size_t totalBlocks = (audioFile.samples.size() + static_cast<std::size_t>(kBlockSize) - 1U) /
+                                        static_cast<std::size_t>(kBlockSize);
 
         for (std::size_t blockIndex = 0; blockIndex < totalBlocks; ++blockIndex) {
             const std::size_t start = blockIndex * static_cast<std::size_t>(kBlockSize);
@@ -77,9 +87,12 @@ int main(int argc, char** argv) {
                 chroma = chromaExtractor.extract(magnitudes, kMinFrequencyHz, kMaxFrequencyHz);
                 chordResult = chordMatcher.match(chroma);
             }
-            const double startTimeSeconds =
-                static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
+            const double startTimeSeconds = static_cast<double>(start) / static_cast<double>(audioFile.sampleRate);
 
+            // clang-format sees stream output as one long binary expression and
+            // tends to regroup fields by column width. Keep this diagnostic
+            // output laid out by semantic field instead.
+            // clang-format off
             std::cout << "Block " << blockIndex
                       << " start=" << std::fixed << std::setprecision(3) << startTimeSeconds << "s"
                       << " samples=" << blockSamples
@@ -104,6 +117,7 @@ int main(int argc, char** argv) {
             std::cout << "] chord=\"" << chordResult.name << '"'
                       << " confidence=" << std::setprecision(2) << chordResult.confidence
                       << '\n';
+            // clang-format on
         }
     } catch (const std::exception& exception) {
         std::cerr << "Error: " << exception.what() << '\n';

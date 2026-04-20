@@ -10,10 +10,11 @@ namespace {
 
 constexpr float kPi = 3.14159265358979323846f;
 
-}  // namespace
+} // namespace
 
 FFTProcessor::FFTProcessor(int fftSize, int sampleRate)
-    : fftSize_(fftSize), sampleRate_(sampleRate) {
+    : fftSize_(fftSize),
+      sampleRate_(sampleRate) {
     if (fftSize_ <= 0) {
         throw std::invalid_argument("fftSize must be positive");
     }
@@ -48,8 +49,7 @@ FFTProcessor::FFTProcessor(int fftSize, int sampleRate)
         window_[0] = 1.0f;
     } else {
         for (int index = 0; index < fftSize_; ++index) {
-            const float phase = (2.0f * kPi * static_cast<float>(index)) /
-                                static_cast<float>(fftSize_ - 1);
+            const float phase = (2.0f * kPi * static_cast<float>(index)) / static_cast<float>(fftSize_ - 1);
             window_[static_cast<std::size_t>(index)] = 0.5f * (1.0f - std::cos(phase));
         }
     }
@@ -97,8 +97,7 @@ const std::vector<float>& FFTProcessor::computeMagnitudeSpectrum(const float* sa
 
 float FFTProcessor::findDominantFrequencyHz() const {
     FrequencyPeak peak;
-    const int peakCount =
-        findTopFrequencyPeaks(&peak, 1, kDefaultMinFrequencyHz, kDefaultMaxFrequencyHz);
+    const int peakCount = findTopFrequencyPeaks(&peak, 1, kDefaultMinFrequencyHz, kDefaultMaxFrequencyHz);
     if (peakCount == 0) {
         return 0.0f;
     }
@@ -134,8 +133,7 @@ int FFTProcessor::findTopFrequencyPeaks(FrequencyPeak* peaks,
 
     const float binWidthHz = static_cast<float>(sampleRate_) / static_cast<float>(fftSize_);
     const int minBin = std::max(1, static_cast<int>(std::ceil(minFrequencyHz / binWidthHz)));
-    const int maxBin = std::min(binCount_ - 2,
-                                static_cast<int>(std::floor(clampedMaxFrequencyHz / binWidthHz)));
+    const int maxBin = std::min(binCount_ - 2, static_cast<int>(std::floor(clampedMaxFrequencyHz / binWidthHz)));
 
     int peakCount = 0;
     for (int bin = minBin; bin <= maxBin; ++bin) {
@@ -188,4 +186,4 @@ int FFTProcessor::binCount() const {
     return binCount_;
 }
 
-}  // namespace chord
+} // namespace chord

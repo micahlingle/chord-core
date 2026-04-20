@@ -16,7 +16,7 @@ int frequencyToBin(float frequencyHz, int fftSize, int sampleRate) {
     return static_cast<int>(frequencyHz / binWidthHz + 0.5f);
 }
 
-}  // namespace
+} // namespace
 
 TEST(ChromaExtractorTest, RejectsInvalidConfiguration) {
     EXPECT_THROW(chord::ChromaExtractor(0, 48000), std::invalid_argument);

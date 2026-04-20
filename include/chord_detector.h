@@ -8,7 +8,7 @@
 namespace chord {
 
 class ChordDetector {
-public:
+  public:
     static constexpr int kDefaultFftSize = 16384;
     static constexpr int kDefaultSampleRate = 48000;
     static constexpr float kDefaultActivityThreshold = 0.01f;
@@ -25,7 +25,7 @@ public:
     void processBlock(const float* samples, int numSamples);
     ChordResult getCurrentChord() const;
 
-private:
+  private:
     FFTProcessor fftProcessor_;
     ChromaExtractor chromaExtractor_;
     ChordTemplateMatcher chordMatcher_;
@@ -35,4 +35,4 @@ private:
     ChordResult currentChord_{};
 };
 
-}  // namespace chord
+} // namespace chord

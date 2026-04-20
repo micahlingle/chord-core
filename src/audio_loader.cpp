@@ -8,9 +8,7 @@
 
 namespace chord {
 
-std::vector<float> downMixInterleavedToMono(const float* interleavedSamples,
-                                           std::size_t frameCount,
-                                           int channelCount) {
+std::vector<float> downMixInterleavedToMono(const float* interleavedSamples, std::size_t frameCount, int channelCount) {
     if (channelCount <= 0) {
         throw std::invalid_argument("channelCount must be positive");
     }
@@ -26,8 +24,8 @@ std::vector<float> downMixInterleavedToMono(const float* interleavedSamples,
     for (std::size_t frame = 0; frame < frameCount; ++frame) {
         float mixedSample = 0.0f;
         for (int channel = 0; channel < channelCount; ++channel) {
-            const std::size_t index = frame * static_cast<std::size_t>(channelCount) +
-                                      static_cast<std::size_t>(channel);
+            const std::size_t index =
+                frame * static_cast<std::size_t>(channelCount) + static_cast<std::size_t>(channel);
             mixedSample += interleavedSamples[index];
         }
 
@@ -62,11 +60,10 @@ AudioFileData AudioLoader::loadWavFile(const std::string& path) const {
     AudioFileData result;
     result.sampleRate = fileInfo.samplerate;
     result.channelCount = channelCount;
-    result.samples = downMixInterleavedToMono(interleavedSamples.data(),
-                                             static_cast<std::size_t>(frameCount),
-                                             channelCount);
+    result.samples =
+        downMixInterleavedToMono(interleavedSamples.data(), static_cast<std::size_t>(frameCount), channelCount);
 
     return result;
 }
 
-}  // namespace chord
+} // namespace chord

@@ -57,4 +57,4 @@ ChordResult ChordDetector::getCurrentChord() const {
     return currentChord_;
 }
 
-}  // namespace chord
+} // namespace chord

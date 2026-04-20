@@ -11,7 +11,18 @@ namespace {
 constexpr int kPitchClassCount = 12;
 
 constexpr std::array<const char*, kPitchClassCount> kPitchClassNames = {
-    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "B",
 };
 
 constexpr std::array<int, 3> kMajorTriadOffsets = {0, 4, 7};
@@ -58,7 +69,7 @@ float computeTemplateSimilarity(const ChromaVector& chroma,
 
     // Cosine similarity keeps confidence in the 0..1 range for non-negative
     // chroma and makes the score independent of overall signal volume.
-    constexpr float kTemplateMagnitude = 1.7320508f;  // sqrt(3 triad tones)
+    constexpr float kTemplateMagnitude = 1.7320508f; // sqrt(3 triad tones)
     return dotProduct / (chromaMagnitude * kTemplateMagnitude);
 }
 
@@ -68,7 +79,7 @@ std::string makeChordName(int rootPitchClass, bool isMinor) {
     return name;
 }
 
-}  // namespace
+} // namespace
 
 ChordResult ChordTemplateMatcher::match(const ChromaVector& chroma) const {
     const float chromaMagnitude = computeChromaMagnitude(chroma);
@@ -96,4 +107,4 @@ ChordResult ChordTemplateMatcher::match(const ChromaVector& chroma) const {
     return bestResult;
 }
 
-}  // namespace chord
+} // namespace chord

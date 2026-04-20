@@ -9,4 +9,4 @@ struct ChordResult {
     float confidence = 0.0f;
 };
 
-}  // namespace chord
+} // namespace chord

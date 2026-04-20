@@ -9,8 +9,8 @@ namespace chord {
 // templates. This is intentionally small and deterministic: no learned model,
 // no heap-backed template tables, and no history.
 class ChordTemplateMatcher {
-public:
+  public:
     ChordResult match(const ChromaVector& chroma) const;
 };
 
-}  // namespace chord
+} // namespace chord

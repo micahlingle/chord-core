@@ -13,8 +13,8 @@ namespace {
 
 std::filesystem::path makeTempWavPath() {
     const auto testInfo = ::testing::UnitTest::GetInstance()->current_test_info();
-    const std::string fileName = std::string("chord_core_") + testInfo->test_suite_name() + "_" +
-                                 testInfo->name() + ".wav";
+    const std::string fileName =
+        std::string("chord_core_") + testInfo->test_suite_name() + "_" + testInfo->name() + ".wav";
     return std::filesystem::temp_directory_path() / fileName;
 }
 
@@ -30,15 +30,14 @@ void writeFloatWav(const std::filesystem::path& path,
     SNDFILE* file = sf_open(path.string().c_str(), SFM_WRITE, &fileInfo);
     ASSERT_NE(file, nullptr);
 
-    const auto frameCount = static_cast<sf_count_t>(interleavedSamples.size() /
-                                                   static_cast<std::size_t>(channelCount));
+    const auto frameCount = static_cast<sf_count_t>(interleavedSamples.size() / static_cast<std::size_t>(channelCount));
     const sf_count_t framesWritten = sf_writef_float(file, interleavedSamples.data(), frameCount);
     sf_close(file);
 
     ASSERT_EQ(framesWritten, frameCount);
 }
 
-}  // namespace
+} // namespace
 
 TEST(AudioFileDataTest, DefaultsToEmptyAudio) {
     const chord::AudioFileData audioFileData;
@@ -50,13 +49,15 @@ TEST(AudioFileDataTest, DefaultsToEmptyAudio) {
 
 TEST(AudioLoaderTest, DownMixesStereoInterleavedSamplesToMono) {
     const std::vector<float> stereoSamples = {
-        0.20f, 0.40f,
-        -0.50f, 0.10f,
-        1.00f, -1.00f,
+        0.20f,
+        0.40f,
+        -0.50f,
+        0.10f,
+        1.00f,
+        -1.00f,
     };
 
-    const std::vector<float> monoSamples =
-        chord::downMixInterleavedToMono(stereoSamples.data(), 3, 2);
+    const std::vector<float> monoSamples = chord::downMixInterleavedToMono(stereoSamples.data(), 3, 2);
 
     ASSERT_EQ(monoSamples.size(), 3U);
     EXPECT_FLOAT_EQ(monoSamples[0], 0.30f);
@@ -67,17 +68,19 @@ TEST(AudioLoaderTest, DownMixesStereoInterleavedSamplesToMono) {
 TEST(AudioLoaderTest, RejectsInvalidDownMixInputs) {
     const std::vector<float> monoSamples = {0.1f, 0.2f};
 
-    EXPECT_THROW(chord::downMixInterleavedToMono(monoSamples.data(), monoSamples.size(), 0),
-                 std::invalid_argument);
+    EXPECT_THROW(chord::downMixInterleavedToMono(monoSamples.data(), monoSamples.size(), 0), std::invalid_argument);
     EXPECT_THROW(chord::downMixInterleavedToMono(nullptr, 1, 1), std::invalid_argument);
 }
 
 TEST(AudioLoaderTest, LoadsWavAndDownMixesToMono) {
     const std::filesystem::path path = makeTempWavPath();
     const std::vector<float> stereoSamples = {
-        0.20f, 0.40f,
-        -0.50f, 0.10f,
-        0.75f, 0.25f,
+        0.20f,
+        0.40f,
+        -0.50f,
+        0.10f,
+        0.75f,
+        0.25f,
     };
 
     writeFloatWav(path, stereoSamples, 48000, 2);

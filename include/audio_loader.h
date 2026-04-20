@@ -12,13 +12,11 @@ struct AudioFileData {
     int channelCount = 0;
 };
 
-std::vector<float> downMixInterleavedToMono(const float* interleavedSamples,
-                                           std::size_t frameCount,
-                                           int channelCount);
+std::vector<float> downMixInterleavedToMono(const float* interleavedSamples, std::size_t frameCount, int channelCount);
 
 class AudioLoader {
-public:
+  public:
     AudioFileData loadWavFile(const std::string& path) const;
 };
 
-}  // namespace chord
+} // namespace chord

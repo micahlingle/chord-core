@@ -10,4 +10,4 @@ float computeRms(const float* samples, int numSamples);
 // The threshold is intentionally caller-provided so demos/tests can tune it.
 bool isSignalActive(float rms, float threshold);
 
-}  // namespace chord
+} // namespace chord

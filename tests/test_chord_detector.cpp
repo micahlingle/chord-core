@@ -17,7 +17,7 @@ void addSineWave(std::vector<float>& samples, int sampleRate, float frequencyHz,
     }
 }
 
-}  // namespace
+} // namespace
 
 TEST(ChordDetectorTest, DefaultChordIsUnknown) {
     chord::ChordDetector detector;
@@ -60,9 +60,9 @@ TEST(ChordDetectorTest, DetectsMajorChordFromSyntheticTriad) {
     constexpr int kSampleRate = 48000;
 
     std::vector<float> samples(static_cast<std::size_t>(kFftSize), 0.0f);
-    addSineWave(samples, kSampleRate, 261.63f, 0.3f);  // C4
-    addSineWave(samples, kSampleRate, 329.63f, 0.3f);  // E4
-    addSineWave(samples, kSampleRate, 392.00f, 0.3f);  // G4
+    addSineWave(samples, kSampleRate, 261.63f, 0.3f); // C4
+    addSineWave(samples, kSampleRate, 329.63f, 0.3f); // E4
+    addSineWave(samples, kSampleRate, 392.00f, 0.3f); // G4
 
     chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f);
     detector.processBlock(samples.data(), static_cast<int>(samples.size()));
@@ -77,9 +77,9 @@ TEST(ChordDetectorTest, DetectsMinorChordFromSyntheticTriad) {
     constexpr int kSampleRate = 48000;
 
     std::vector<float> samples(static_cast<std::size_t>(kFftSize), 0.0f);
-    addSineWave(samples, kSampleRate, 220.00f, 0.3f);  // A3
-    addSineWave(samples, kSampleRate, 261.63f, 0.3f);  // C4
-    addSineWave(samples, kSampleRate, 329.63f, 0.3f);  // E4
+    addSineWave(samples, kSampleRate, 220.00f, 0.3f); // A3
+    addSineWave(samples, kSampleRate, 261.63f, 0.3f); // C4
+    addSineWave(samples, kSampleRate, 329.63f, 0.3f); // E4
 
     chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f);
     detector.processBlock(samples.data(), static_cast<int>(samples.size()));

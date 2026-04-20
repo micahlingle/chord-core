@@ -31,4 +31,4 @@ bool isSignalActive(float rms, float threshold) {
     return rms >= threshold;
 }
 
-}  // namespace chord
+} // namespace chord
