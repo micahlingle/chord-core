@@ -6,6 +6,8 @@
 #include "fft_processor.h"
 #include "temporal_smoother.h"
 
+#include <vector>
+
 namespace chord {
 
 class ChordDetector {
@@ -29,6 +31,9 @@ class ChordDetector {
     ChordResult getCurrentChord() const;
 
   private:
+    void appendSamples(const float* samples, int numSamples);
+    int copyRecentSamplesToAnalysisWindow();
+
     FFTProcessor fftProcessor_;
     ChromaExtractor chromaExtractor_;
     ChordTemplateMatcher chordMatcher_;
@@ -36,6 +41,10 @@ class ChordDetector {
     float activityThreshold_ = kDefaultActivityThreshold;
     float minFrequencyHz_ = kDefaultMinFrequencyHz;
     float maxFrequencyHz_ = kDefaultMaxFrequencyHz;
+    std::vector<float> sampleHistory_;
+    std::vector<float> analysisWindow_;
+    int historyWriteIndex_ = 0;
+    int historyCount_ = 0;
     ChordResult currentChord_{};
 };
 

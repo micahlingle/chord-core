@@ -116,6 +116,7 @@ Current notes:
 - The public demo exercises `ChordDetector` and prints concise chord/confidence output.
 - `chord_core_analyze` prints RMS, activity, FFT peaks, chroma, chord, and confidence for DSP debugging and tuning.
 - `ChordDetector` now runs the reusable block-processing path: RMS/activity gate, FFT, chroma extraction, and template matching.
+- `ChordDetector` keeps a rolling FFT analysis window so streaming block input uses the most recent `fftSize` samples instead of analyzing only the latest short block.
 - Temporal smoothing is intentionally not part of this milestone and remains the next stabilization layer.
 
 ## Milestone 5: Temporal Smoothing

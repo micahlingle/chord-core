@@ -26,7 +26,9 @@ ChordDetector::ChordDetector(int fftSize,
       temporalSmoother_(requiredStableFrames),
       activityThreshold_(activityThreshold),
       minFrequencyHz_(minFrequencyHz),
-      maxFrequencyHz_(maxFrequencyHz) {
+      maxFrequencyHz_(maxFrequencyHz),
+      sampleHistory_(static_cast<std::size_t>(fftSize), 0.0f),
+      analysisWindow_(static_cast<std::size_t>(fftSize), 0.0f) {
     if (activityThreshold_ < 0.0f) {
         throw std::invalid_argument("activityThreshold must be non-negative");
     }
@@ -45,19 +47,55 @@ void ChordDetector::processBlock(const float* samples, int numSamples) {
         throw std::invalid_argument("numSamples must be positive");
     }
 
+    appendSamples(samples, numSamples);
+
     const float rms = computeRms(samples, numSamples);
     if (!isSignalActive(rms, activityThreshold_)) {
         currentChord_ = temporalSmoother_.smooth({});
         return;
     }
 
-    const std::vector<float>& magnitudes = fftProcessor_.computeMagnitudeSpectrum(samples, numSamples);
+    const int analysisSamples = copyRecentSamplesToAnalysisWindow();
+    const std::vector<float>& magnitudes =
+        fftProcessor_.computeMagnitudeSpectrum(analysisWindow_.data(), analysisSamples);
     const ChromaVector chroma = chromaExtractor_.extract(magnitudes, minFrequencyHz_, maxFrequencyHz_);
     currentChord_ = temporalSmoother_.smooth(chordMatcher_.match(chroma));
 }
 
 ChordResult ChordDetector::getCurrentChord() const {
     return currentChord_;
+}
+
+void ChordDetector::appendSamples(const float* samples, int numSamples) {
+    const int fftSize = fftProcessor_.fftSize();
+    for (int sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex) {
+        sampleHistory_[static_cast<std::size_t>(historyWriteIndex_)] = samples[sampleIndex];
+        historyWriteIndex_ = (historyWriteIndex_ + 1) % fftSize;
+        if (historyCount_ < fftSize) {
+            ++historyCount_;
+        }
+    }
+}
+
+int ChordDetector::copyRecentSamplesToAnalysisWindow() {
+    if (historyCount_ <= 0) {
+        return 0;
+    }
+
+    const int fftSize = fftProcessor_.fftSize();
+    if (historyCount_ < fftSize) {
+        for (int sampleIndex = 0; sampleIndex < historyCount_; ++sampleIndex) {
+            analysisWindow_[static_cast<std::size_t>(sampleIndex)] =
+                sampleHistory_[static_cast<std::size_t>(sampleIndex)];
+        }
+        return historyCount_;
+    }
+
+    for (int sampleIndex = 0; sampleIndex < fftSize; ++sampleIndex) {
+        const int historyIndex = (historyWriteIndex_ + sampleIndex) % fftSize;
+        analysisWindow_[static_cast<std::size_t>(sampleIndex)] = sampleHistory_[static_cast<std::size_t>(historyIndex)];
+    }
+    return fftSize;
 }
 
 } // namespace chord

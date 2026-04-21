@@ -109,3 +109,24 @@ TEST(ChordDetectorTest, AppliesDefaultTemporalSmoothing) {
     detector.processBlock(samples.data(), static_cast<int>(samples.size()));
     EXPECT_EQ(detector.getCurrentChord().name, "C major");
 }
+
+TEST(ChordDetectorTest, DetectsChordAcrossStreamingBlocksWithRollingWindow) {
+    constexpr int kFftSize = 16384;
+    constexpr int kSampleRate = 48000;
+    constexpr int kBlockSize = 1024;
+
+    std::vector<float> samples(static_cast<std::size_t>(kFftSize), 0.0f);
+    addSineWave(samples, kSampleRate, 261.63f, 0.3f); // C4
+    addSineWave(samples, kSampleRate, 329.63f, 0.3f); // E4
+    addSineWave(samples, kSampleRate, 392.00f, 0.3f); // G4
+
+    chord::ChordDetector detector(kFftSize, kSampleRate, 0.001f, 75.0f, 5000.0f, 1);
+
+    for (int start = 0; start < kFftSize; start += kBlockSize) {
+        detector.processBlock(samples.data() + start, kBlockSize);
+    }
+
+    const chord::ChordResult result = detector.getCurrentChord();
+    EXPECT_EQ(result.name, "C major");
+    EXPECT_GT(result.confidence, 0.8f);
+}
