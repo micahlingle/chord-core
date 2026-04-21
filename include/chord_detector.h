@@ -18,6 +18,7 @@ class ChordDetector {
     static constexpr float kDefaultMinFrequencyHz = 75.0f;
     static constexpr float kDefaultMaxFrequencyHz = 5000.0f;
     static constexpr int kDefaultRequiredStableFrames = 3;
+    static constexpr FFTWindowMode kDefaultWindowMode = FFTWindowMode::CausalRightBiased;
 
     ChordDetector();
     ChordDetector(int fftSize,
@@ -25,7 +26,8 @@ class ChordDetector {
                   float activityThreshold = kDefaultActivityThreshold,
                   float minFrequencyHz = kDefaultMinFrequencyHz,
                   float maxFrequencyHz = kDefaultMaxFrequencyHz,
-                  int requiredStableFrames = kDefaultRequiredStableFrames);
+                  int requiredStableFrames = kDefaultRequiredStableFrames,
+                  FFTWindowMode windowMode = kDefaultWindowMode);
 
     void processBlock(const float* samples, int numSamples);
     ChordResult getCurrentChord() const;

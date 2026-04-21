@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -15,6 +16,40 @@ void addSineWave(std::vector<float>& samples, int sampleRate, float frequencyHz,
         const float timeSeconds = static_cast<float>(index) / static_cast<float>(sampleRate);
         samples[index] += amplitude * std::sin(2.0f * kPi * frequencyHz * timeSeconds);
     }
+}
+
+void addSineWaveRange(std::vector<float>& samples,
+                      int sampleRate,
+                      int startSample,
+                      int endSample,
+                      float frequencyHz,
+                      float amplitude) {
+    for (int index = startSample; index < endSample; ++index) {
+        const float timeSeconds = static_cast<float>(index) / static_cast<float>(sampleRate);
+        samples[static_cast<std::size_t>(index)] += amplitude * std::sin(2.0f * kPi * frequencyHz * timeSeconds);
+    }
+}
+
+void addChordRange(std::vector<float>& samples,
+                   int sampleRate,
+                   int startSample,
+                   int endSample,
+                   float rootFrequencyHz,
+                   float thirdFrequencyHz,
+                   float fifthFrequencyHz) {
+    addSineWaveRange(samples, sampleRate, startSample, endSample, rootFrequencyHz, 0.3f);
+    addSineWaveRange(samples, sampleRate, startSample, endSample, thirdFrequencyHz, 0.3f);
+    addSineWaveRange(samples, sampleRate, startSample, endSample, fifthFrequencyHz, 0.3f);
+}
+
+int findFirstDetectedBlock(std::vector<chord::ChordResult>* blockResults, const std::string& chordName) {
+    for (std::size_t index = 0; index < blockResults->size(); ++index) {
+        if ((*blockResults)[index].name == chordName) {
+            return static_cast<int>(index);
+        }
+    }
+
+    return -1;
 }
 
 } // namespace
@@ -129,4 +164,50 @@ TEST(ChordDetectorTest, DetectsChordAcrossStreamingBlocksWithRollingWindow) {
     const chord::ChordResult result = detector.getCurrentChord();
     EXPECT_EQ(result.name, "C major");
     EXPECT_GT(result.confidence, 0.8f);
+}
+
+TEST(ChordDetectorTest, CausalWindowDetectsChordChangeEarlierThanSymmetricWindow) {
+    constexpr int kFftSize = 16384;
+    constexpr int kSampleRate = 48000;
+    constexpr int kBlockSize = 1024;
+    constexpr int kBlocksPerPhase = 16;
+    constexpr int kTotalBlocks = kBlocksPerPhase * 2;
+
+    std::vector<float> streamSamples(static_cast<std::size_t>(kTotalBlocks * kBlockSize), 0.0f);
+    addChordRange(streamSamples, kSampleRate, 0, kBlocksPerPhase * kBlockSize, 261.63f, 329.63f, 392.00f); // C major
+    addChordRange(streamSamples,
+                  kSampleRate,
+                  kBlocksPerPhase * kBlockSize,
+                  kTotalBlocks * kBlockSize,
+                  293.66f,
+                  369.99f,
+                  440.00f); // D major
+
+    chord::ChordDetector
+        causalDetector(kFftSize, kSampleRate, 0.001f, 75.0f, 5000.0f, 1, chord::FFTWindowMode::CausalRightBiased);
+    chord::ChordDetector
+        symmetricDetector(kFftSize, kSampleRate, 0.001f, 75.0f, 5000.0f, 1, chord::FFTWindowMode::SymmetricHann);
+
+    std::vector<chord::ChordResult> causalResults;
+    std::vector<chord::ChordResult> symmetricResults;
+    causalResults.reserve(kTotalBlocks);
+    symmetricResults.reserve(kTotalBlocks);
+
+    for (int blockIndex = 0; blockIndex < kTotalBlocks; ++blockIndex) {
+        const int blockStart = blockIndex * kBlockSize;
+        const float* blockSamples = streamSamples.data() + blockStart;
+
+        causalDetector.processBlock(blockSamples, kBlockSize);
+        symmetricDetector.processBlock(blockSamples, kBlockSize);
+
+        causalResults.push_back(causalDetector.getCurrentChord());
+        symmetricResults.push_back(symmetricDetector.getCurrentChord());
+    }
+
+    const int causalDetectionBlock = findFirstDetectedBlock(&causalResults, "D major");
+    const int symmetricDetectionBlock = findFirstDetectedBlock(&symmetricResults, "D major");
+
+    ASSERT_GE(causalDetectionBlock, 0);
+    ASSERT_GE(symmetricDetectionBlock, 0);
+    EXPECT_LT(causalDetectionBlock, symmetricDetectionBlock);
 }

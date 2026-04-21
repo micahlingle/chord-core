@@ -10,11 +10,37 @@ namespace {
 
 constexpr float kPi = 3.14159265358979323846f;
 
+float makeSymmetricHannWeight(int index, int fftSize) {
+    if (fftSize == 1) {
+        return 1.0f;
+    }
+
+    const float phase = (2.0f * kPi * static_cast<float>(index)) / static_cast<float>(fftSize - 1);
+    return 0.5f * (1.0f - std::cos(phase));
+}
+
+float makeCausalRightBiasedWeight(int index, int fftSize) {
+    if (fftSize == 1) {
+        return 1.0f;
+    }
+
+    const float normalizedPosition = static_cast<float>(index) / static_cast<float>(fftSize - 1);
+
+    // This is a smooth causal taper: the oldest sample starts at zero weight,
+    // and the newest sample reaches full weight. It keeps the same FFT length,
+    // but biases the analysis toward recent audio so chord changes appear
+    // sooner in the streaming detector output.
+    const float phase = 0.5f * kPi * normalizedPosition;
+    const float sine = std::sin(phase);
+    return sine * sine;
+}
+
 } // namespace
 
-FFTProcessor::FFTProcessor(int fftSize, int sampleRate)
+FFTProcessor::FFTProcessor(int fftSize, int sampleRate, FFTWindowMode windowMode)
     : fftSize_(fftSize),
-      sampleRate_(sampleRate) {
+      sampleRate_(sampleRate),
+      windowMode_(windowMode) {
     if (fftSize_ <= 0) {
         throw std::invalid_argument("fftSize must be positive");
     }
@@ -43,14 +69,14 @@ FFTProcessor::FFTProcessor(int fftSize, int sampleRate)
         throw std::runtime_error("Failed to create FFTW plan");
     }
 
-    // A Hann window tapers the block edges toward zero. This reduces spectral
-    // leakage when a note does not fit perfectly inside one analysis block.
-    if (fftSize_ == 1) {
-        window_[0] = 1.0f;
-    } else {
-        for (int index = 0; index < fftSize_; ++index) {
-            const float phase = (2.0f * kPi * static_cast<float>(index)) / static_cast<float>(fftSize_ - 1);
-            window_[static_cast<std::size_t>(index)] = 0.5f * (1.0f - std::cos(phase));
+    for (int index = 0; index < fftSize_; ++index) {
+        if (windowMode_ == FFTWindowMode::CausalRightBiased) {
+            window_[static_cast<std::size_t>(index)] = makeCausalRightBiasedWeight(index, fftSize_);
+        } else {
+            // A symmetric Hann window tapers both block edges toward zero. This
+            // reduces spectral leakage when a note does not fit perfectly
+            // inside one analysis block.
+            window_[static_cast<std::size_t>(index)] = makeSymmetricHannWeight(index, fftSize_);
         }
     }
 }
@@ -180,6 +206,18 @@ int FFTProcessor::fftSize() const {
 
 int FFTProcessor::sampleRate() const {
     return sampleRate_;
+}
+
+FFTWindowMode FFTProcessor::windowMode() const {
+    return windowMode_;
+}
+
+float FFTProcessor::windowWeight(int sampleIndex) const {
+    if (sampleIndex < 0 || sampleIndex >= fftSize_) {
+        throw std::out_of_range("sampleIndex must be within the FFT window");
+    }
+
+    return window_[static_cast<std::size_t>(sampleIndex)];
 }
 
 int FFTProcessor::binCount() const {

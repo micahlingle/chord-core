@@ -13,15 +13,17 @@ ChordDetector::ChordDetector()
                     kDefaultActivityThreshold,
                     kDefaultMinFrequencyHz,
                     kDefaultMaxFrequencyHz,
-                    kDefaultRequiredStableFrames) {}
+                    kDefaultRequiredStableFrames,
+                    kDefaultWindowMode) {}
 
 ChordDetector::ChordDetector(int fftSize,
                              int sampleRate,
                              float activityThreshold,
                              float minFrequencyHz,
                              float maxFrequencyHz,
-                             int requiredStableFrames)
-    : fftProcessor_(fftSize, sampleRate),
+                             int requiredStableFrames,
+                             FFTWindowMode windowMode)
+    : fftProcessor_(fftSize, sampleRate, windowMode),
       chromaExtractor_(fftSize, sampleRate),
       temporalSmoother_(requiredStableFrames),
       activityThreshold_(activityThreshold),
@@ -84,6 +86,8 @@ int ChordDetector::copyRecentSamplesToAnalysisWindow() {
 
     const int fftSize = fftProcessor_.fftSize();
     if (historyCount_ < fftSize) {
+        // Before the rolling history fills, the contiguous prefix already holds
+        // samples in time order, so we can copy that prefix directly.
         for (int sampleIndex = 0; sampleIndex < historyCount_; ++sampleIndex) {
             analysisWindow_[static_cast<std::size_t>(sampleIndex)] =
                 sampleHistory_[static_cast<std::size_t>(sampleIndex)];
@@ -91,6 +95,10 @@ int ChordDetector::copyRecentSamplesToAnalysisWindow() {
         return historyCount_;
     }
 
+    // Once the circular history is full, historyWriteIndex_ points to the
+    // oldest sample slot. Walking forward from there rebuilds the analysis
+    // window from oldest to newest so the FFT window can emphasize recent
+    // samples near the end of the frame.
     for (int sampleIndex = 0; sampleIndex < fftSize; ++sampleIndex) {
         const int historyIndex = (historyWriteIndex_ + sampleIndex) % fftSize;
         analysisWindow_[static_cast<std::size_t>(sampleIndex)] = sampleHistory_[static_cast<std::size_t>(historyIndex)];

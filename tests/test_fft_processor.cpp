@@ -45,7 +45,27 @@ TEST(FFTProcessorTest, ReportsExpectedBinCount) {
 
     EXPECT_EQ(processor.fftSize(), 1024);
     EXPECT_EQ(processor.sampleRate(), 48000);
+    EXPECT_EQ(processor.windowMode(), chord::FFTWindowMode::SymmetricHann);
     EXPECT_EQ(processor.binCount(), 513);
+}
+
+TEST(FFTProcessorTest, BuildsSymmetricHannWindowByDefault) {
+    chord::FFTProcessor processor(16, 48000);
+
+    EXPECT_FLOAT_EQ(processor.windowWeight(0), 0.0f);
+    EXPECT_FLOAT_EQ(processor.windowWeight(15), 0.0f);
+    EXPECT_GT(processor.windowWeight(8), processor.windowWeight(4));
+    EXPECT_GT(processor.windowWeight(7), processor.windowWeight(0));
+}
+
+TEST(FFTProcessorTest, BuildsCausalWindowThatFavorsRecentSamples) {
+    chord::FFTProcessor processor(16, 48000, chord::FFTWindowMode::CausalRightBiased);
+
+    EXPECT_EQ(processor.windowMode(), chord::FFTWindowMode::CausalRightBiased);
+    EXPECT_FLOAT_EQ(processor.windowWeight(0), 0.0f);
+    EXPECT_NEAR(processor.windowWeight(15), 1.0f, 1.0e-6f);
+    EXPECT_LT(processor.windowWeight(4), processor.windowWeight(8));
+    EXPECT_LT(processor.windowWeight(8), processor.windowWeight(12));
 }
 
 TEST(FFTProcessorTest, DetectsDominantFrequencyForSineWave) {
@@ -197,6 +217,13 @@ TEST(FFTProcessorTest, RejectsInvalidSampleBlocks) {
     EXPECT_THROW(processor.computeMagnitudeSpectrum(nullptr, 1024), std::invalid_argument);
     EXPECT_THROW(processor.computeMagnitudeSpectrum(samples.data(), 0), std::invalid_argument);
     EXPECT_THROW(processor.computeMagnitudeSpectrum(samples.data(), -1), std::invalid_argument);
+}
+
+TEST(FFTProcessorTest, RejectsInvalidWindowIndex) {
+    chord::FFTProcessor processor(1024, 48000);
+
+    EXPECT_THROW(processor.windowWeight(-1), std::out_of_range);
+    EXPECT_THROW(processor.windowWeight(1024), std::out_of_range);
 }
 
 TEST(FFTProcessorTest, RejectsInvalidPeakSearchInputs) {

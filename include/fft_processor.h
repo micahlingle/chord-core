@@ -6,6 +6,17 @@
 
 namespace chord {
 
+enum class FFTWindowMode {
+    // Classic symmetric Hann window. This is a good general-purpose analysis
+    // window, but it centers most of its weight in the middle of the frame.
+    SymmetricHann,
+
+    // A causal window for streaming use. Older samples taper in smoothly while
+    // the newest samples receive the strongest weight, which helps reduce
+    // detector lag after a chord change.
+    CausalRightBiased,
+};
+
 struct FrequencyPeak {
     int binIndex = 0;
     float frequencyHz = 0.0f;
@@ -21,7 +32,7 @@ class FFTProcessor {
 
     // fftSize is the number of time-domain samples analyzed per transform.
     // sampleRate is needed to convert FFT bin indices back into Hertz.
-    FFTProcessor(int fftSize, int sampleRate);
+    FFTProcessor(int fftSize, int sampleRate, FFTWindowMode windowMode = FFTWindowMode::SymmetricHann);
     ~FFTProcessor();
 
     // FFTW plans own internal setup data and are tied to specific input/output
@@ -44,6 +55,11 @@ class FFTProcessor {
 
     int fftSize() const;
     int sampleRate() const;
+    FFTWindowMode windowMode() const;
+
+    // Exposes the precomputed analysis window for focused tests and debugging.
+    // The weights are fixed after construction, so reading them is safe.
+    float windowWeight(int sampleIndex) const;
 
     // Real-input FFTs only produce fftSize / 2 + 1 unique bins because the
     // negative-frequency half is redundant for real-valued audio.
@@ -53,6 +69,7 @@ class FFTProcessor {
     int fftSize_ = 0;
     int sampleRate_ = 0;
     int binCount_ = 0;
+    FFTWindowMode windowMode_ = FFTWindowMode::SymmetricHann;
     float* fftInput_ = nullptr;
     fftwf_complex* fftOutput_ = nullptr;
 

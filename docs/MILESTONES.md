@@ -77,6 +77,7 @@ Current notes:
 
 - `FFTProcessor` uses single-precision FFTW (`fftw3f`).
 - The demo uses 1024-sample RMS blocks and a 16384-sample FFT window.
+- `FFTProcessor` now supports both a symmetric Hann window and a right-biased causal window for lower-latency streaming detection.
 - Frequency peak searches are currently constrained to 75 Hz through 5 kHz for guitar-focused diagnostics.
 - Demo frequency reporting is gated by a `0.01` RMS activity threshold.
 - Top-N peak reporting is a diagnostic tool; chroma extraction should use the full FFT magnitude spectrum.
@@ -117,6 +118,7 @@ Current notes:
 - `chord_core_analyze` prints RMS, activity, FFT peaks, chroma, chord, and confidence for DSP debugging and tuning.
 - `ChordDetector` now runs the reusable block-processing path: RMS/activity gate, FFT, chroma extraction, and template matching.
 - `ChordDetector` keeps a rolling FFT analysis window so streaming block input uses the most recent `fftSize` samples instead of analyzing only the latest short block.
+- `ChordDetector` uses the right-biased causal FFT window by default so recent samples influence chord changes sooner without reducing FFT size.
 - Temporal smoothing is intentionally not part of this milestone and remains the next stabilization layer.
 
 ## Milestone 5: Temporal Smoothing
@@ -134,6 +136,7 @@ Current notes:
 
 - `TemporalSmoother` requires the same non-Unknown chord to appear for a configurable number of consecutive frames before reporting it.
 - Silence or inactive input resets the smoothed result to `Unknown` immediately.
+- Some residual output delay still comes from the 1024-sample block hop and the smoothing requirement, but the largest FFT-window lag is reduced through causal window shaping instead of shrinking `fftSize`.
 
 ## Testing Plan
 
