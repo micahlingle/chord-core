@@ -157,6 +157,22 @@ Current notes:
 - The default required overlap accuracy is `0.70`, and each dataset can override that with an optional sibling `*.min_accuracy.txt` file.
 - Predicted spans can be dumped back to CSV for side-by-side comparison during tuning.
 
+## Next Optimization Directions
+
+Status: pending
+
+Goals:
+
+- Keep the current low-frequency resolution while reducing CPU cost in the analysis path.
+- Reduce visible chord-change latency without giving up the current FFT-size-based frequency granularity.
+- Use the dataset evaluation workflow to measure whether each DSP change is actually helpful.
+
+Current notes:
+
+- The leading CPU-reduction idea is a multirate front end: low-pass around the useful chord band, decimate, and then run a smaller FFT that preserves the current bin spacing.
+- The leading latency-reduction idea is a smaller processing hop size, so `ChordDetector` can update more often without shrinking the main analysis window.
+- These two directions should be evaluated separately when possible so CPU savings and latency improvements do not get conflated in the regression results.
+
 ## Testing Plan
 
 - Use GoogleTest for unit tests.
