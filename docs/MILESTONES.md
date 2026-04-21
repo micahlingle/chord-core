@@ -138,6 +138,25 @@ Current notes:
 - Silence or inactive input resets the smoothed result to `Unknown` immediately.
 - Some residual output delay still comes from the 1024-sample block hop and the smoothing requirement, but the largest FFT-window lag is reduced through causal window shaping instead of shrinking `fftSize`.
 
+## Local Evaluation
+
+Status: complete
+
+Goals:
+
+- Compare `ChordDetector` output against labeled WAV files outside the unit-test fixture set.
+- Measure overlap accuracy over labeled chord spans.
+- Fail a dedicated local regression target when accuracy drops below a configured threshold.
+
+Current notes:
+
+- `chord_core_eval` loads one local WAV file and one label CSV in `start_seconds,end_seconds,chord` format.
+- The evaluator scores overlap accuracy only across labeled time ranges, so unlabeled gaps are ignored.
+- The build now auto-discovers tracked `datasets/*.wav` files that have matching `datasets/*.labels.csv` files, validates each CSV first, and evaluates each pair during the normal build.
+- Matching discovered datasets are also registered as dedicated CTest entries.
+- The default required overlap accuracy is `0.70`, and each dataset can override that with an optional sibling `*.min_accuracy.txt` file.
+- Predicted spans can be dumped back to CSV for side-by-side comparison during tuning.
+
 ## Testing Plan
 
 - Use GoogleTest for unit tests.

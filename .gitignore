@@ -3,9 +3,6 @@
 /build-coverage
 /build-*
 
-# Local audio files for development/testing
-/datasets
-
 # Mac-specific
 *.DS_Store
 
